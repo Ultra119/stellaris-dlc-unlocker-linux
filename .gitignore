@@ -3,9 +3,6 @@
 /.idea/
 /.banner/
 /.github/
-/presset.json
-README.md
-presset.json
 unlocker.log
 /UI/icons/1x/
 /UI/icons/social/
@@ -14,3 +11,4 @@ unlocker.log
 /UI/ui_dialog.ui
 /UI/ui_main.ui
 /UI/ui_error.ui
+*.pyc
