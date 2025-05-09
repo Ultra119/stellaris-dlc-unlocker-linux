@@ -3,6 +3,7 @@ from shutil import rmtree, copytree
 import stat
 from zipfile import ZipFile, BadZipFile
 import zipfile
+import shutil
 
 import requests
 from PyQt5.QtGui import QDesktopServices, QColor, QBrush, QIcon, QClipboard
@@ -648,27 +649,27 @@ class MainWindow(QMainWindow, ui_main.Ui_MainWindow):
 
     def install_creamlinux(self, app_id, game_install_dir, dlc_list_from_data_file):
         print(f"Installing CreamLinux for app_id {app_id} in {game_install_dir}")
-        source_cream_linux_files_dir = os.path.join(self.parent_directory, 'creamapi_steam_files_linux')
+        source_cream_linux_files_dir = os.path.join(self.parent_directory, 'creamlinux')
         if not os.path.isdir(source_cream_linux_files_dir):
-             source_cream_linux_files_dir = os.path.join(self.parent_directory, 'creamapi_steam_files')
+             source_cream_linux_files_dir = os.path.join(self.parent_directory, 'creamlinux')
              if not os.path.isdir(source_cream_linux_files_dir):
                 raise FileNotFoundError(f"CreamLinux source files directory not found at expected locations: "
-                                    f"{os.path.join(self.parent_directory, 'creamapi_steam_files_linux')} or "
-                                    f"{os.path.join(self.parent_directory, 'creamapi_steam_files')}")
+                                    f"{os.path.join(self.parent_directory, 'creamlinux')} or "
+                                    f"{os.path.join(self.parent_directory, 'creamlinux')}")
 
-        specific_ini_source_dir = os.path.join(self.parent_directory, 'creamapi_steam_files')
+        specific_ini_source_dir = os.path.join(self.parent_directory, 'creamlinux')
         source_ini_path = os.path.join(specific_ini_source_dir, 'cream_api.ini')
 
         if not os.path.isfile(source_ini_path):
             raise FileNotFoundError(f"Generated cream_api.ini not found at {source_ini_path}. CreamApiMaker might have failed.")
 
         try:
-            if os.path.isdir(os.path.join(self.parent_directory, 'creamapi_steam_files_linux')):
-                copytree(os.path.join(self.parent_directory, 'creamapi_steam_files_linux'), game_install_dir, dirs_exist_ok=True)
-                print(f"Copied base CreamLinux files from 'creamapi_steam_files_linux' to {game_install_dir}")
+            if os.path.isdir(os.path.join(self.parent_directory, 'creamlinux')):
+                copytree(os.path.join(self.parent_directory, 'creamlinux'), game_install_dir, dirs_exist_ok=True)
+                print(f"Copied base CreamLinux files from 'creamlinux' to {game_install_dir}")
             else:
                 copytree(specific_ini_source_dir, game_install_dir, dirs_exist_ok=True)
-                print(f"Copied base CreamLinux files from 'creamapi_steam_files' to {game_install_dir} (linux subdir missing)")
+                print(f"Copied base CreamLinux files from 'creamlinux' to {game_install_dir} (linux subdir missing)")
 
             target_ini_path = os.path.join(game_install_dir, 'cream_api.ini')
             shutil.copy2(source_ini_path, target_ini_path)
