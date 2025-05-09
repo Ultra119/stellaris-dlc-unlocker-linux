@@ -1,7 +1,6 @@
 import os
 from shutil import rmtree, copytree
 import stat
-from sys import argv
 from zipfile import ZipFile, BadZipFile
 import zipfile
 
@@ -12,7 +11,6 @@ from PyQt5.QtCore import Qt, QUrl, QTimer, QTranslator
 from subprocess import run
 from pathlib import Path
 import subprocess
-import platform
 
 import UI.ui_main as ui_main
 from Libs.ConnectionCheck import ConnectionCheckThread
@@ -28,15 +26,13 @@ from Libs.MD5Check import MD5
 
 class MainWindow(QMainWindow, ui_main.Ui_MainWindow):
     def __init__(self):
-        if platform.system() == "Windows":
-            self.win = True
-        else:
-            self.win = False
+        self.win = False
 
         super(MainWindow, self).__init__()
         self.translator = QTranslator()
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setupUi(self)
+
         if not self.win:
             self.skip_launcher_reinstall_checbox.setChecked(True)
             self.skip_launcher_reinstall_checbox.setVisible(False)
@@ -53,12 +49,9 @@ class MainWindow(QMainWindow, ui_main.Ui_MainWindow):
         self.game_path = None
         self.not_updated_dlc = []
         self.path_change()
-        if self.win:
-            self.kill_process('Paradox Launcher.exe')
-            self.kill_process('stellaris.exe')
-        else:
-            self.kill_process('dowser')
-            self.kill_process('stellaris')
+
+        self.kill_process('dowser')
+        self.kill_process('stellaris')
 
         self.draggable_elements = [self.frame_user, self.server_status, self.gh_status, self.lappname_title,
                                    self.frame_top]
@@ -79,7 +72,7 @@ class MainWindow(QMainWindow, ui_main.Ui_MainWindow):
         self.creamapidone = False
 
         self.GITHUB_REPO = "https://api.github.com/repos/seuyh/stellaris-dlc-unlocker/releases/latest"
-        self.current_version = '2.21'
+        self.current_version = '2.21' # This should be managed properly if releases are made
         self.version_label.setText(f'Ver. {str(self.current_version)}')
 
         self.copy_files_radio.setVisible(False)
@@ -104,8 +97,9 @@ class MainWindow(QMainWindow, ui_main.Ui_MainWindow):
         self.connection_thread.github_status_checked.connect(self.handle_github_status)
         self.connection_thread.server_status_checked.connect(self.handle_server_status)
 
-        self.setWindowTitle("Stellaris DLC Unlocker")
-        self.setWindowIcon(QIcon(f'{self.parent_directory}/UI/icons/stellaris.png'))
+        self.setWindowTitle("Stellaris DLC Unlocker (Linux)")
+        self.setWindowIcon(QIcon(os.path.join(self.parent_directory, 'UI', 'icons', 'stellaris.png')))
+
 
         self.bn_bug.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(2))
         self.path_choose_button.clicked.connect(self.browse_folder)
@@ -168,12 +162,12 @@ class MainWindow(QMainWindow, ui_main.Ui_MainWindow):
     def kill_process(self, process_name):
         print(f'Killing {process_name}')
         try:
-            if self.win:
-                run(["taskkill", "/F", "/IM", process_name], check=True, creationflags=subprocess.CREATE_NO_WINDOW)
-            else:
-                run(["pkill", process_name], check=True)
-        except:
-            print(f'No process named {process_name}')
+            run(["pkill", "-f", process_name], check=True)
+        except subprocess.CalledProcessError:
+            print(f'No process named {process_name} running or pkill error.')
+        except FileNotFoundError:
+            print(f'pkill command not found. Cannot kill process {process_name}.')
+
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
@@ -200,40 +194,43 @@ class MainWindow(QMainWindow, ui_main.Ui_MainWindow):
 
     def path_change(self):
         path = stellaris_path()
-        if path:
+        if path and os.path.isdir(path):
             print(f'Auto detected game path: {path}')
             self.game_path_line.setText(path)
-            self.game_path = path.replace("/", "\\")
+            self.game_path = path
             self.loadDLCNames()
         else:
-            print(f'Cant detect game path')
+            print(f'Cant detect game path automatically or path is invalid.')
+            self.game_path_line.setText("") 
+            self.game_path = None
+
 
     def browse_folder(self):
         directory = QFileDialog.getExistingDirectory(self, self.tr("Choose Stellaris path"),
-                                                     self.game_path_line.text())
+                                                     self.game_path_line.text() or os.path.expanduser("~"))
         if directory:
-            if os.path.isfile(os.path.join(directory, "stellaris.exe")) or os.path.isfile(os.path.join(directory, "stellaris")):
+            if os.path.isfile(os.path.join(directory, "stellaris")):
                 self.game_path_line.setText(directory)
-                self.game_path = directory.replace("/", "\\")
+                self.game_path = directory
                 print(f'Path browsed: {self.game_path}')
                 self.loadDLCNames()
             else:
-                print('Path browsed incorrectly')
-                self.errorexec(self.tr("This is not Stellaris path"), self.tr("Ok"))
+                print('Path browsed incorrectly (stellaris executable not found).')
+                self.errorexec(self.tr("This is not Stellaris path (stellaris executable not found)"), self.tr("Ok"))
+
 
     def path_check(self):
         path = os.path.normpath(self.game_path_line.text())
         try:
-            if self.win and os.path.isfile(os.path.join(path, "stellaris.exe")):
+            if os.path.isfile(os.path.join(path, "stellaris")):
                 print(f'Game path: {path}')
                 return path
-            if not self.win and os.path.isfile(os.path.join(path, "stellaris")):
-                print(f'Game path: {path}')
-                return path
-        except:
+        except Exception as e:
+            print(f"Error during path check for '{path}': {e}")
             pass
-        print(f'win: {self.win} path: {path}')
-        self.errorexec(self.tr("Please choose game path"), self.tr("Ok"))
+        
+        print(f'Path check failed for: {path}')
+        self.errorexec(self.tr("Please choose game path (stellaris executable not found)"), self.tr("Ok"))
         return False
 
     def old_dlc_show(self):
@@ -243,7 +240,10 @@ class MainWindow(QMainWindow, ui_main.Ui_MainWindow):
             self.old_dlc_text.setVisible(True)
         else:
             self.update_dlc_button.setChecked(False)
-            print("All DlCs is up to date or server return error")
+            self.update_dlc_button.setVisible(False)
+            self.old_dlc_text.setVisible(False)
+            print("All DLCs are up to date or server return error")
+
 
     def check_for_updates(self, current_version):
         try:
@@ -255,19 +255,38 @@ class MainWindow(QMainWindow, ui_main.Ui_MainWindow):
 
                 if latest_version != current_version:
                     print(f"Found new version: {latest_version}.")
-                    if self.dialogexec(self.tr('New version'),
-                                       self.tr('New version found\nPlease update the program to correctly work '),
-                                       self.tr('Cancel'), self.tr('Update')):
-                        exe_asset_url = None
+                    download_url = latest_release.get('html_url')
+
+                    linux_asset_url = None
+                    for asset in latest_release.get('assets', []):
+                        asset_name_lower = asset.get('name', '').lower()
+                        if any(ext in asset_name_lower for ext in ['.appimage', '.tar.gz', '.deb', '.rpm']) and \
+                           not any(win_ext in asset_name_lower for win_ext in ['.exe', '.msi']):
+                            linux_asset_url = asset.get('browser_download_url')
+                            break
+                    
+                    if not linux_asset_url and latest_release.get('assets'):
                         for asset in latest_release['assets']:
-                            if asset['name'].endswith('.exe'):
-                                exe_asset_url = asset['browser_download_url']
-                        self.open_link_in_browser(exe_asset_url)
+                            asset_name_lower = asset.get('name', '').lower()
+                            if not any(win_ext in asset_name_lower for win_ext in ['.exe', '.msi']):
+                                linux_asset_url = asset.get('browser_download_url')
+                                break
+                    
+                    final_url_to_open = linux_asset_url or download_url
+
+                    if final_url_to_open and self.dialogexec(self.tr('New version'),
+                                       self.tr('New version found ({0}).\nPlease update the program to ensure correct functionality.').format(latest_version),
+                                       self.tr('Cancel'), self.tr('Update')):
+                        self.open_link_in_browser(final_url_to_open)
                 else:
-                    print(f"Unlocker is up to date")
-        except:
-            print("Cant check updates")
-            pass
+                    print(f"Unlocker is up to date (Version: {current_version})")
+            else:
+                print(f"Failed to check for updates. Status code: {response.status_code}")
+        except requests.RequestException as e:
+            print(f"Cant check updates due to network error: {e}")
+        except Exception as e:
+            print(f"Error during update check: {e}")
+
 
     def start_connection_check(self):
         self.connection_thread.start()
@@ -292,12 +311,18 @@ class MainWindow(QMainWindow, ui_main.Ui_MainWindow):
                     'Cant establish connection with server\nCheck your connection or you can try download DLC directly\nUnzip downloaded "dlc" folder to game folder\nThen you can continue'),
                                self.tr("Exit"), self.tr("Open")):
                 self.open_link_in_browser('https://mega.nz/folder/4zFRnD6a#aVGAK32ZHPxCp7bMtG87BA')
-                self.alternative_unloc_checkbox.setEnabled(False)
             else:
                 self.close()
 
     def loadDLCNames(self):
         self.dlc_status_widget.clear()
+        if not self.game_path or not os.path.isdir(self.game_path):
+            print("Game path not set or invalid, cannot load DLC names.")
+            item = QListWidgetItem(self.tr("Set game path to see DLC status"))
+            item.setForeground(QBrush(QColor("gray")))
+            self.dlc_status_widget.addItem(item)
+            return
+
         self.not_updated_dlc = self.checkDLCUpdate()
 
         for dlc in dlc_data:
@@ -312,89 +337,65 @@ class MainWindow(QMainWindow, ui_main.Ui_MainWindow):
             if status_color != 'black':
                 item.setForeground(QBrush(QColor(status_color)))
                 if status_color == "orange":
-                    item.setText(item.text() + " (old)")
+                    item.setText(item.text() + self.tr(" (old/mismatched)"))
+                elif status_color == "LightCoral":
+                     item.setText(item.text() + self.tr(" (missing)"))
+                elif status_color == "teal":
+                     item.setText(item.text() + self.tr(" (OK)"))
                 self.dlc_status_widget.addItem(item)
 
     def checkDLCStatus(self, dlc_folder):
         if not dlc_folder:
             return "black"
+        
+        if not self.game_path:
+            return "LightCoral"
+
         dlc_path_folder = os.path.join(self.game_path, "dlc", dlc_folder)
         dlc_path_zip = os.path.join(self.game_path, "dlc", f'{dlc_folder}.zip')
-        if os.path.exists(dlc_path_folder) or os.path.exists(dlc_path_zip):
+        
+        is_present_as_folder = os.path.exists(dlc_path_folder)
+        is_present_as_zip = os.path.exists(dlc_path_zip)
+
+        if is_present_as_folder or (is_present_as_zip and not self.is_invalid_zip(dlc_path_zip)):
             if dlc_folder in self.not_updated_dlc:
                 return "orange"
             return "teal"
         else:
             return "LightCoral"
 
+
     def checkDLCUpdate(self):
-        md5_checker = MD5(f"{self.game_path}\\dlc", "stlunlocker.pro")
+        if not self.game_path or not os.path.isdir(os.path.join(self.game_path, "dlc")):
+            print("DLC directory not found for MD5 check.")
+            return []
+        
+        md5_checker = MD5(os.path.join(self.game_path, "dlc"), "stlunlocker.pro")
         return md5_checker.check_files()
 
     @staticmethod
     def full_reinstall():
-        try:
-            print(f'Deleting documents folder...')
-            user_home = os.path.expanduser("~")
-            rmtree(os.path.join(user_home, "Documents", "Paradox Interactive", "Stellaris"))
-        except Exception as e:
-            print(f'Cant delete {e}')
-            pass
+        print(f'Full reinstall: Skipped (Windows-specific user data path removal).')
+        pass
 
     def download_alt_method(self):
-        print('Downloading alt launcher')
-        file = argv[0]
-        dir = os.path.dirname(file)
-        print(f'Path to download: {dir}')
-        self.downloaded_launcher_dir = f'{dir}\\launcher-installer-windows_2024.13.msi'
-        print(f'Download path {self.downloaded_launcher_dir}')
-        print(f'Path exist: {os.path.isfile(self.downloaded_launcher_dir)}')
-        if os.path.isfile(self.downloaded_launcher_dir):
-            return
-        progress_dialog = QProgressDialog(self.tr('Alt launcher downloading'), None, 0, 100)
-        progress_dialog.setWindowTitle(self.tr('Downloading'))
-        progress_dialog.setWindowModality(2)
-        progress_dialog.show()
-
-        try:
-            response = requests.get(
-                "https://stlunlocker.pro/unlocker/launcher-installer-windows_2024.13.msi",
-                stream=True)
-            total_size_in_bytes = int(response.headers.get('content-length', 0))
-            block_size = 1024
-            downloaded_bytes = 0
-
-            with open(self.downloaded_launcher_dir, 'wb') as file:
-                for data in response.iter_content(block_size):
-                    download_breaked = 0
-                    if progress_dialog.wasCanceled():
-                        download_breaked = 1
-                        break
-                    file.write(data)
-                    downloaded_bytes += len(data)
-                    progress = int(downloaded_bytes / total_size_in_bytes * 100)
-                    progress_dialog.setValue(progress)
-
-        except Exception as e:
-            print(f'Error while download alt launcher. Please try again or dont use this method Error: {e}')
-            self.errorexec(self.tr("Cant download alt launcher"), self.tr("Ok"),
-                           exitApp=True)
-
-        finally:
-            progress_dialog.close()
-            if not download_breaked:
-                self.launcher_downloaded = True
-                print(f'Launcher downloaded {self.downloaded_launcher_dir}')
+        print('Alternative (MSI) launcher download: Skipped (Windows-specific).')
+        self.launcher_downloaded = False
+        return
 
     def unlock(self):
         print('Unlocking...')
         if not self.path_check():
-            print('Error: incorrect path, return')
+            print('Error: incorrect game path, aborting unlock.')
             return
+        
         self.game_path = os.path.normpath(self.game_path_line.text())
-        print('Unlock started')
+        print('Unlock started for Linux')
         print(
-            f'Settings:\nPath: {self.game_path}\nFull reinstall: {self.full_reinstall_checkbox.isChecked()}\nAlt unlock: {self.alternative_unloc_checkbox.isChecked()}\nSkip reinstall: {self.skip_launcher_reinstall_checbox.isChecked()}')
+            f'Settings:\nPath: {self.game_path}\n'
+            f'Skip launcher reinstall: {self.skip_launcher_reinstall_checbox.isChecked()} (Effectively True on Linux)'
+        )
+
         self.unlock_button.setEnabled(False)
         self.game_path_line.setEnabled(False)
         self.path_choose_button.setEnabled(False)
@@ -411,17 +412,23 @@ class MainWindow(QMainWindow, ui_main.Ui_MainWindow):
         self.current_dlc_label.setVisible(True)
         self.current_dlc_progress_bar.setVisible(True)
         self.speed_label.setVisible(True)
-        if self.full_reinstall_checkbox.isChecked():
-            self.full_reinstall()
-        if self.alternative_unloc_checkbox.isChecked():
-            self.download_alt_method()
-        if not os.path.exists(os.path.join(self.game_path, "dlc")):
-            os.makedirs(os.path.join(self.game_path, "dlc"))
+
+        dlc_base_path = os.path.join(self.game_path, "dlc")
+        if not os.path.exists(dlc_base_path):
+            try:
+                os.makedirs(dlc_base_path)
+                print(f"Created DLC directory: {dlc_base_path}")
+            except OSError as e:
+                print(f"Failed to create DLC directory {dlc_base_path}: {e}")
+                self.errorexec(self.tr("Failed to create DLC directory."), self.tr("Ok"), exitApp=True)
+                return
+
+
         if self.game_path:
             self.is_downloading = True
-            if self.update_dlc_button.isChecked():
-                print("Updating DLCs...")
-                self.delete_folders(f"{self.game_path}\\dlc", self.not_updated_dlc)
+            if self.update_dlc_button.isChecked() and self.update_dlc_button.isVisible():
+                print("Updating (redownloading) mismatched/old DLCs...")
+                self.delete_folders(os.path.join(self.game_path, "dlc"), self.not_updated_dlc)
                 self.not_updated_dlc = []
             self.loadDLCNames()
             self.creamapi_maker = CreamAPI()
@@ -435,53 +442,68 @@ class MainWindow(QMainWindow, ui_main.Ui_MainWindow):
                 if self.download_queue:
                     file_url, save_path = self.download_queue.pop(0)
                     self.download_thread = DownloaderThread(file_url, save_path, self.dlc_downloaded, self.dlc_count)
-
-                    # Подключаем сигналы к обработчикам
                     self.download_thread.progress_signal.connect(self.update_progress)
                     self.download_thread.progress_signal_2.connect(self.update_progress_2)
                     self.download_thread.error_signal.connect(self.show_error)
                     self.download_thread.speed_signal.connect(self.show_download_speed)
-                    self.download_thread.finished.connect(
-                        start_next_download)
+                    self.download_thread.finished.connect(start_next_download)
                     self.download_thread.start()
+                elif self.dlc_downloaded == self.dlc_count :
+                    self.update_progress(100)
 
-            # Сначала заполняем очередь
             for item in dlc_data:
                 if 'dlc_folder' in item and item['dlc_folder']:
                     self.dlc_count += 1
-            for dlc in dlc_data:
-                dlc_folder = dlc['dlc_folder']
-                if dlc_folder == '':
-                    continue
-                file_url = f"{'https://stlunlocker.pro/unlocker/'}{dlc_folder}.zip"
-                save_path = os.path.join(self.game_path, 'dlc', f'{dlc_folder}.zip')
-                dlc_path = os.path.join(self.game_path, 'dlc', dlc_folder)
+            
+            if self.dlc_count == 0:
+                print("No DLCs with specified folders found in configuration. Skipping downloads.")
+                self.update_progress(100)
+                return
 
-                if not os.path.exists(dlc_path) and self.is_invalid_zip(save_path):
-                    if os.path.exists(save_path):
-                        os.remove(save_path)
-                    self.download_queue.append((file_url, save_path))
+            for dlc in dlc_data:
+                dlc_folder_name = dlc.get('dlc_folder')
+                if not dlc_folder_name:
+                    continue
+
+                file_url = f"{'https://stlunlocker.pro/unlocker/'}{dlc_folder_name}.zip"
+                save_path_zip = os.path.join(self.game_path, 'dlc', f'{dlc_folder_name}.zip')
+                extracted_folder_path = os.path.join(self.game_path, 'dlc', dlc_folder_name)
+
+                if not os.path.exists(extracted_folder_path) and self.is_invalid_zip(save_path_zip):
+                    if os.path.exists(save_path_zip):
+                        try:
+                            os.remove(save_path_zip)
+                            print(f"Removed invalid/incomplete zip: {save_path_zip}")
+                        except OSError as e:
+                             print(f"Error removing invalid zip {save_path_zip}: {e}")
+                    self.download_queue.append((file_url, save_path_zip))
                 else:
                     self.dlc_downloaded += 1
-                    self.update_progress(int((self.dlc_downloaded / self.dlc_count) * 100))
+                    current_progress = int((self.dlc_downloaded / self.dlc_count) * 100) if self.dlc_count > 0 else 0
+                    self.update_progress(current_progress)
+
 
             if self.download_queue:
-                print('Starting downloads...')
+                print(f'Starting downloads for {len(self.download_queue)} DLCs...')
                 if self.server_status.isChecked():
                     start_next_download()
                 else:
+                    self.errorexec(self.tr("Cannot download DLCs: Server connection failed."), self.tr("Ok"))
                     self.download_files_radio.setVisible(False)
-                    self.progress_label.setVisible(False)
-                    self.dlc_download_label.setVisible(False)
-                    self.dlc_download_progress_bar.setVisible(False)
-                    self.current_dlc_label.setVisible(False)
-                    self.current_dlc_progress_bar.setVisible(False)
-                    self.speed_label.setVisible(False)
-                    self.reinstall()
+                    self.unlock_button.setEnabled(True)
+                    return
+            elif self.dlc_downloaded == self.dlc_count and self.dlc_count > 0:
+                print("All DLCs already present. Proceeding to next step.")
+                self.update_progress(100)
+            elif self.dlc_count == 0 :
+                 print("No DLCs to download. Proceeding to next step.")
+                 self.update_progress(100)
+
 
     def update_creamapi_progress(self, value):
         if value == 100:
             self.creamapidone = True
+            print("CreamAPI generation complete.")
             self.download_complete()
 
     @staticmethod
@@ -499,212 +521,191 @@ class MainWindow(QMainWindow, ui_main.Ui_MainWindow):
         return False
 
     @staticmethod
-    def delete_folders(base_path, folders):
-        base_path = Path(base_path)
+    def delete_folders(base_path, folders_to_delete):
+        base_path_obj = Path(base_path)
 
-        for name in folders:
-            dir_path = base_path / name
+        for folder_name in folders_to_delete:
+            dir_path_to_delete = base_path_obj / folder_name
+            zip_path_to_delete = base_path_obj / f"{folder_name}.zip"
             try:
-                if dir_path.is_dir():
-                    rmtree(dir_path)
-                    print(f"Deleted: {dir_path}")
-                else:
-                    pass
+                if dir_path_to_delete.is_dir():
+                    rmtree(dir_path_to_delete)
+                    print(f"Deleted directory: {dir_path_to_delete}")
+                if zip_path_to_delete.is_file():
+                    os.remove(zip_path_to_delete)
+                    print(f"Deleted zip file: {zip_path_to_delete}")
             except Exception as e:
-                print(f"Can't delete {dir_path}: {e}")
+                print(f"Can't delete {folder_name} (dir/zip): {e}")
+
 
     def update_progress(self, value, by_download=False):
         self.dlc_download_progress_bar.setValue(value)
         if by_download:
             self.dlc_downloaded += 1
-            self.update_progress(int((self.dlc_downloaded / self.dlc_count) * 100))
+            current_progress = int((self.dlc_downloaded / self.dlc_count) * 100) if self.dlc_count > 0 else 0
+            self.dlc_download_progress_bar.setValue(current_progress)
             self.loadDLCNames()
-        if value == 100:
-            self.speed_label.setText(f"")
+        
+        if self.dlc_download_progress_bar.value() == 100:
+            self.speed_label.setText("")
             self.update_progress_2(100)
-            # self.download_text_dlc(' ')
             self.download_complete()
+
 
     def update_progress_2(self, value):
         self.current_dlc_progress_bar.setValue(value)
 
     def show_download_speed(self, speed):
-        self.speed_label.setText(f'{speed}MB/s')
+        self.speed_label.setText(f'{speed:.1f} MB/s')
 
     def show_error(self, error_message):
         print(f'DownloadThread error signal: {error_message}')
-        self.errorexec(self.tr("File download error"), self.tr("Exit"), exitApp=True)
+        self.errorexec(self.tr("File download error: {0}").format(str(error_message)), self.tr("Exit"), exitApp=True)
+
 
     def show_reinstall_error(self, error_message):
-        print(f'ReinstallThread error signal: {error_message}')
-        self.errorexec(self.tr("Launcher reinstall error"), self.tr("Exit"), exitApp=True)
+        print(f'ReinstallThread (Linux stub) error signal: {error_message}')
 
     def download_complete(self):
-        if self.dlc_download_progress_bar.value() == 100 and self.creamapidone == True:
-            print('Dlc downloaded')
+        if self.dlc_download_progress_bar.value() == 100 and self.creamapidone:
+            print('All DLC downloads and CreamAPI generation complete.')
+            self.download_files_radio.setChecked(True)
             self.reinstall()
 
+
     def reinstall(self):
-        self.download_files_radio.setChecked(True)
-        print('Reinstalling')
-        paradox_folder1, paradox_folder2, paradox_folder3, paradox_folder4 = launcher_path()
-        if not self.skip_launcher_reinstall_checbox.isChecked():
-            self.reinstall_thread = ReinstallThread(self.game_path, paradox_folder1, paradox_folder2, paradox_folder3,
-                                                    paradox_folder4, self.launcher_downloaded,
-                                                    self.downloaded_launcher_dir)
-            # self.reinstall_thread.progress_signal.connect(self.update_reinstall_progress)
-            self.reinstall_thread.error_signal.connect(self.show_reinstall_error)
-            self.reinstall_thread.continue_reinstall.connect(self.reinstall_2)
-            self.reinstall_thread.start()
-        else:
-            print('Reinstalling skipped')
-            self.reinstall_2(paradox_folder1)
+        print('Setting up CreamLinux...')
+        print('Skipping Windows-style launcher reinstall, proceeding with CreamLinux setup flow.')
+        self.reinstall_2(self.game_path)
 
-    def reinstall_2(self, paradox_folder1):
-        if not self.win:
-            self.replace_files_linux()
-            return
 
-        launcher_folders = [item for item in os.listdir(paradox_folder1) if item.startswith("launcher")]
-        launcher_folders.sort(key=lambda x: os.path.getmtime(os.path.join(paradox_folder1, x)))
-        # launcher_folder = os.path.join(os.path.join(paradox_folder1, launcher_folders[0]))
-        launcher_folders = [item for item in os.listdir(paradox_folder1) if item.startswith("launcher")]
-        launcher_folders.sort(key=lambda x: os.path.getmtime(os.path.join(paradox_folder1, x)))
-        # self.replace_files(os.path.join(os.path.join(paradox_folder1, launcher_folders[0])))
-        try:
-            self.replace_files(os.path.join(os.path.join(paradox_folder1, launcher_folders[0])))
-        except Exception as e:
-            print(f'Start replace files error: {e}')
-            self.errorexec(self.tr("Launcher reinstall error"), self.tr("Exit"), exitApp=True)
-
-    def replace_files(self, launcher_folder):
-        self.launcher_reinstall_radio.setChecked(True)
-        print('Replacing files')
-        # try:
-        #     rmtree(f'{self.game_path}/dlc')
-        # except Exception:
-        #     pass
-        try:
-            print('Unzipping...')
-            zip_files = [file for file in os.listdir(os.path.join(self.game_path, 'dlc')) if file.endswith('.zip')]
-            if zip_files:
-                for zip_file in zip_files:
-                    self.unzip_and_replace(zip_file)
-        except Exception as e:
-            print(f"Error while unzipping {e}")
-            self.errorexec(self.tr("Error while unzipping"), self.tr("Exit"), exitApp=True)
-
-        if os.path.exists(
-                os.path.join(launcher_folder, 'resources', 'app.asar.unpacked', 'node_modules', 'greenworks', 'lib')):
-            copy_to_path = os.path.join(launcher_folder, 'resources', 'app.asar.unpacked', 'node_modules', 'greenworks',
-                                        'lib')
-        elif os.path.exists(os.path.join(launcher_folder, 'resources', 'app', 'dist', 'main')):
-            copy_to_path = os.path.join(launcher_folder, 'resources', 'app', 'dist', 'main')
-        else:
-            print('Error unknown launcher')
-            self.errorexec(self.tr("Error unknown launcher"), self.tr("Exit"), exitApp=True)
-        print(f'Copy to path: {copy_to_path}')
-        # try: # C:\Users\sp21\AppData\Local\Programs\Paradox Interactive\launcher\launcher-v2.2024.14\resources\app.asar.unpacked\node_modules\greenworks\lib
-        # o s.remove(f'{launcher_folder}/resources/{old_path}/dist/main/steam_api64_o.dll')
-        # except:
-        # pass
-        try:
-            os.remove(f'{launcher_folder}/xdelta3.exe')
-        except:
-            pass
-        # os.rename(f'{launcher_folder}/resources/{old_path}/dist/main/steam_api64.dll',
-        # f'{launcher_folder}/resources/{old_path}/dist/main/steam_api64_o.dll')
-        copytree(f'{self.parent_directory}/creamapi_launcher_files',
-                 f'{copy_to_path}',
-                 dirs_exist_ok=True)
-        copytree(f'{self.parent_directory}/creamapi_steam_files', self.game_path, dirs_exist_ok=True)
-        print('Copy complete')
-        self.copy_files_radio.setChecked(True)
-        self.lauch_game_checkbox.setVisible(True)
-        self.done_button.setVisible(True)
-        print('All done!')
+    def reinstall_2(self, launcher_install_dir_or_game_path_linux):
+        self.replace_files_linux()
+        return
 
     def replace_files_linux(self):
         self.launcher_reinstall_radio.setChecked(True)
-        print(f'Copy to path: {self.game_path}')
-        if self.install_creamlinux(281990, self.game_path, dlc_data):
-            self.copy_files_radio.setChecked(True)
-            if self.dialogexec(self.tr('Game unlocked!'),
-                                   self.tr('The game is unlocked!\nPlease manually add the following to the game launch options (if you haven''t already):') + '\nsh ./cream.sh %command%',
-                                   self.tr('Close'), self.tr('Copy')):
-                QApplication.clipboard().setText('sh ./cream.sh %command%')
+        print(f'Preparing CreamLinux files for game path: {self.game_path}')
 
-        print('Copy complete')
-        self.lauch_game_checkbox.setVisible(True)
-        self.done_button.setVisible(True)
-        print('All done!')
-
-
-    def install_creamlinux(self, app_id, game_install_dir, dlcs):
-        print(f"Installing CreamLinux for app_id {app_id} in {game_install_dir}, dlcs: {dlcs}")
-        zip_url = "https://github.com/anticitizn/creamlinux/releases/latest/download/creamlinux.zip"
-        zip_path = os.path.join(game_install_dir, "creamlinux.zip")
-
-        print(f"Downloading CreamLinux from {zip_url}")
-        response = requests.get(zip_url)
-        if response.status_code != 200:
-            raise Exception(
-                f"Failed to download CreamLinux (HTTP {response.status_code})"
-            )
-
-        print(f"Writing zip file to {zip_path}")
-        with open(zip_path, "wb") as f:
-            f.write(response.content)
-
-        print("Extracting CreamLinux files")
         try:
-            with zipfile.ZipFile(zip_path, "r") as zip_ref:
-                zip_ref.extractall(game_install_dir)
-        except zipfile.BadZipFile:
-            raise Exception(
-                "Downloaded file is corrupted. Please try again."
-            )
+            print('Unzipping downloaded DLCs...')
+            dlc_dir = os.path.join(self.game_path, 'dlc')
+            zip_files = [f for f in os.listdir(dlc_dir) if f.endswith('.zip') and os.path.isfile(os.path.join(dlc_dir, f))]
+            if zip_files:
+                for zip_file_name in zip_files:
+                    full_zip_path = os.path.join(dlc_dir, zip_file_name)
+                    if not self.is_invalid_zip(full_zip_path):
+                        self.unzip_and_replace(zip_file_name)
+                    else:
+                        print(f"Skipping unzip for invalid/empty zip: {zip_file_name}")
+            else:
+                print("No new .zip files found to unzip in DLC directory.")
+        except Exception as e:
+            print(f"Error during DLC unzipping process: {e}")
+            self.errorexec(self.tr("Error while unzipping DLCs: {0}").format(str(e)), self.tr("Exit"), exitApp=True)
+            return
 
-        os.remove(zip_path)
+        try:
+            if self.install_creamlinux(281990, self.game_path, dlc_data):
+                self.copy_files_radio.setChecked(True)
+                
+                launch_option_text = 'sh ./cream.sh %command%'
+                if self.dialogexec(self.tr('Game Unlocked with CreamLinux!'),
+                                   self.tr('The game is unlocked!\n'
+                                           'Please manually add the following to the game\'s launch options in Steam:\n\n'
+                                           '{0}\n\n'
+                                           'Click "Copy" to copy this text to your clipboard.').format(launch_option_text),
+                                   self.tr('Close'), self.tr('Copy')):
+                    QApplication.clipboard().setText(launch_option_text)
+                    self.errorexec(self.tr("Launch option copied to clipboard!"), self.tr("Ok"))
+
+
+                print('CreamLinux setup complete.')
+                self.lauch_game_checkbox.setVisible(True)
+                self.done_button.setVisible(True)
+                print('All unlocking steps done for Linux!')
+            else:
+                self.errorexec(self.tr("CreamLinux setup failed."), self.tr("Exit"), exitApp=True)
+        except Exception as e:
+            print(f"Error during CreamLinux installation: {e}")
+            self.errorexec(self.tr("CreamLinux setup error: {0}").format(str(e)), self.tr("Exit"), exitApp=True)
+
+
+    def install_creamlinux(self, app_id, game_install_dir, dlc_list_from_data_file):
+        print(f"Installing CreamLinux for app_id {app_id} in {game_install_dir}")
+        source_cream_linux_files_dir = os.path.join(self.parent_directory, 'creamapi_steam_files_linux')
+        if not os.path.isdir(source_cream_linux_files_dir):
+             source_cream_linux_files_dir = os.path.join(self.parent_directory, 'creamapi_steam_files')
+             if not os.path.isdir(source_cream_linux_files_dir):
+                raise FileNotFoundError(f"CreamLinux source files directory not found at expected locations: "
+                                    f"{os.path.join(self.parent_directory, 'creamapi_steam_files_linux')} or "
+                                    f"{os.path.join(self.parent_directory, 'creamapi_steam_files')}")
+
+        specific_ini_source_dir = os.path.join(self.parent_directory, 'creamapi_steam_files')
+        source_ini_path = os.path.join(specific_ini_source_dir, 'cream_api.ini')
+
+        if not os.path.isfile(source_ini_path):
+            raise FileNotFoundError(f"Generated cream_api.ini not found at {source_ini_path}. CreamApiMaker might have failed.")
+
+        try:
+            if os.path.isdir(os.path.join(self.parent_directory, 'creamapi_steam_files_linux')):
+                copytree(os.path.join(self.parent_directory, 'creamapi_steam_files_linux'), game_install_dir, dirs_exist_ok=True)
+                print(f"Copied base CreamLinux files from 'creamapi_steam_files_linux' to {game_install_dir}")
+            else:
+                copytree(specific_ini_source_dir, game_install_dir, dirs_exist_ok=True)
+                print(f"Copied base CreamLinux files from 'creamapi_steam_files' to {game_install_dir} (linux subdir missing)")
+
+            target_ini_path = os.path.join(game_install_dir, 'cream_api.ini')
+            shutil.copy2(source_ini_path, target_ini_path)
+            print(f"Copied generated cream_api.ini to {target_ini_path}")
+
+        except Exception as e:
+            raise Exception(f"Failed to copy CreamLinux files to game directory: {str(e)}")
 
         cream_sh_path = os.path.join(game_install_dir, "cream.sh")
-        print(f"Setting permissions for {cream_sh_path}")
-        try:
-            os.chmod(cream_sh_path, os.stat(cream_sh_path).st_mode | stat.S_IEXEC)
-        except OSError as e:
-            raise Exception(f"Failed to set execute permissions: {str(e)}")
-
-        cream_api_path = os.path.join(game_install_dir, "cream_api.ini")
-        print(f"Creating config at {cream_api_path}")
-        try:
-            copytree(f'{self.parent_directory}/creamapi_steam_files_linux', game_install_dir, dirs_exist_ok=True)
-        except IOError as e:
-            raise Exception(f"Failed to create config file: {str(e)}")
+        if os.path.isfile(cream_sh_path):
+            try:
+                current_permissions = os.stat(cream_sh_path).st_mode
+                os.chmod(cream_sh_path, current_permissions | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
+                print(f"Set execute permissions for {cream_sh_path}")
+            except OSError as e:
+                raise Exception(f"Failed to set execute permissions for {cream_sh_path}: {str(e)}")
+        else:
+            raise FileNotFoundError(f"cream.sh not found at {cream_sh_path} after copy operation.")
 
         return True
 
-    def unzip_and_replace(self, dlc_path):
-        zip_path = os.path.join(self.game_path, 'dlc', dlc_path)
+
+    def unzip_and_replace(self, dlc_zip_filename):
+        zip_path = os.path.join(self.game_path, 'dlc', dlc_zip_filename)
         extract_folder = os.path.join(self.game_path, 'dlc')
         if not os.path.exists(extract_folder):
             os.makedirs(extract_folder)
 
+        print(f"Unzipping: {zip_path} into {extract_folder}")
         try:
             with ZipFile(zip_path, 'r') as zip_ref:
                 zip_ref.extractall(extract_folder)
             os.remove(zip_path)
+            print(f"Successfully unzipped and removed {zip_path}")
             return extract_folder
         except Exception as e:
-            print(f'Error while unzipping {e}')
-            self.errorexec(self.tr("Error while unzipping"), self.tr("Exit"), exitApp=True)
+            print(f'Error while unzipping {dlc_zip_filename}: {e}')
+            raise
+
 
     def finish(self):
         if self.lauch_game_checkbox.isChecked():
             try:
-                if self.win:
-                    run('start steam://run/281990', shell=True, capture_output=True, text=True)
-                else:
-                    run('xdg-open steam://run/281990', shell=True, capture_output=True, text=True)
-            except:
-                pass
+                print("Attempting to launch Stellaris via Steam (xdg-open)...")
+                run(['xdg-open', 'steam://run/281990'], check=True)
+            except FileNotFoundError:
+                print("xdg-open command not found. Cannot launch game via Steam automatically.")
+                self.errorexec(self.tr("xdg-open not found. Cannot launch game."), self.tr("Ok"))
+            except subprocess.CalledProcessError as e:
+                print(f"Error launching game via Steam: {e}")
+                self.errorexec(self.tr("Failed to launch game via Steam: {0}").format(str(e)), self.tr("Ok"))
+            except Exception as e:
+                print(f"An unexpected error occurred while trying to launch game: {e}")
+                self.errorexec(self.tr("Unexpected error launching game: {0}").format(str(e)), self.tr("Ok"))
         self.close()
