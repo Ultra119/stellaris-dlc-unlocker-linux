@@ -67,18 +67,3 @@ def stellaris_path():
     except Exception as e:
         print(f"Error reading Steam library configuration: {e}")
         return 0
-
-
-def launcher_path():
-    user_home = os.path.expanduser("~")
-    launcher_path_1 = os.path.join(user_home, ".paradoxlauncher")
-    launcher_path_2 = os.path.join(user_home, ".config", "Paradox Interactive", "launcher-v2")
-    launcher_path_3 = os.path.join(user_home, ".local", "share", "Paradox Interactive", "launcher-v2")
-    launcher_path_4 = os.path.join(user_home, ".local", "share", "Paradox Interactive")
-
-    return (
-        launcher_path_1 if os.path.isdir(launcher_path_1) else "",
-        launcher_path_2 if os.path.isdir(launcher_path_2) else "",
-        launcher_path_3 if os.path.isdir(launcher_path_3) else "",
-        launcher_path_4 if os.path.isdir(launcher_path_4) else ""
-    )

@@ -554,8 +554,8 @@ class Ui_MainWindow(object):
         self.work_page_label.setObjectName("work_page_label")
         self.verticalLayout_7.addWidget(self.work_page_label)
         self.frame_bug_main = QtWidgets.QFrame(self.work_page)
-        self.frame_bug_main.setMinimumSize(QtCore.QSize(0, 200))
-        self.frame_bug_main.setMaximumSize(QtCore.QSize(16777215, 300))
+        self.frame_bug_main.setMinimumSize(QtCore.QSize(0, 150))
+        self.frame_bug_main.setMaximumSize(QtCore.QSize(16777215, 250))
         self.frame_bug_main.setToolTip("")
         self.frame_bug_main.setAutoFillBackground(False)
         self.frame_bug_main.setFrameShape(QtWidgets.QFrame.NoFrame)
@@ -563,66 +563,7 @@ class Ui_MainWindow(object):
         self.frame_bug_main.setObjectName("frame_bug_main")
         self.gridLayout = QtWidgets.QGridLayout(self.frame_bug_main)
         self.gridLayout.setObjectName("gridLayout")
-        self.horizontalLayout_19 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_19.setSpacing(0)
-        self.horizontalLayout_19.setObjectName("horizontalLayout_19")
-        self.alternative_unloc_checkbox = QtWidgets.QCheckBox(self.frame_bug_main)
-        font = QtGui.QFont()
-        font.setFamily("Segoe UI")
-        font.setPointSize(14)
-        self.alternative_unloc_checkbox.setFont(font)
-        self.alternative_unloc_checkbox.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.alternative_unloc_checkbox.setToolTip("")
-        self.alternative_unloc_checkbox.setLayoutDirection(QtCore.Qt.RightToLeft)
-        self.alternative_unloc_checkbox.setStyleSheet("QCheckBox {\n"
-"        color:rgb(255,255,255);\n"
-"}\n"
-"\n"
-"QCheckBox::indicator {\n"
-"        width: 12px;\n"
-"        height: 12px;\n"
-"}\n"
-"\n"
-"QCheckBox::indicator:unchecked {\n"
-"        border:2px solid rgb(51,51,51);\n"
-"    background:rgb(91,90,90);\n"
-"}\n"
-"\n"
-"QCheckBox::indicator:unchecked:pressed {\n"
-"    border:2px solid rgb(51,51,51);\n"
-"       background:rgb(0,143,170);\n"
-"}\n"
-"\n"
-"QCheckBox::indicator:checked {\n"
-"    background-color:rgb(0,143,150);\n"
-"        border: 2px solid rgb(51,51,51);\n"
-"}\n"
-"\n"
-"QCheckBox::indicator:checked:pressed {\n"
-"        border:2px solid rgb(51,51,51);\n"
-"    background:rgb(91,90,90);\n"
-"}\n"
-"")
-        self.alternative_unloc_checkbox.setObjectName("alternative_unloc_checkbox")
-        self.horizontalLayout_19.addWidget(self.alternative_unloc_checkbox)
-        self.label_2 = QtWidgets.QLabel(self.frame_bug_main)
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        self.label_2.setFont(font)
-        self.label_2.setCursor(QtGui.QCursor(QtCore.Qt.WhatsThisCursor))
-        self.label_2.setStyleSheet("padding-bottom: 10px;")
-        self.label_2.setText("?")
-        self.label_2.setObjectName("label_2")
-        self.horizontalLayout_19.addWidget(self.label_2)
-        spacerItem6 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout_19.addItem(spacerItem6)
-        self.gridLayout.addLayout(self.horizontalLayout_19, 2, 1, 1, 1)
-        self.lab_bullet3 = QtWidgets.QLabel(self.frame_bug_main)
-        self.lab_bullet3.setMaximumSize(QtCore.QSize(5, 16777215))
-        self.lab_bullet3.setText("")
-        self.lab_bullet3.setPixmap(QtGui.QPixmap("UI\\../../../Desktop/unlocker-v2_design/Minimalistic-Flat-Modern-GUI-Template-master/icons/1x/bulletAsset 54.png"))
-        self.lab_bullet3.setObjectName("lab_bullet3")
-        self.gridLayout.addWidget(self.lab_bullet3, 3, 0, 1, 1)
+
         self.lab_bullet = QtWidgets.QLabel(self.frame_bug_main)
         self.lab_bullet.setMaximumSize(QtCore.QSize(5, 16777215))
         self.lab_bullet.setText("")
@@ -630,74 +571,7 @@ class Ui_MainWindow(object):
         self.lab_bullet.setAlignment(QtCore.Qt.AlignCenter)
         self.lab_bullet.setObjectName("lab_bullet")
         self.gridLayout.addWidget(self.lab_bullet, 0, 0, 1, 1)
-        spacerItem7 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
-        self.gridLayout.addItem(spacerItem7, 0, 7, 1, 1)
-        spacerItem8 = QtWidgets.QSpacerItem(421, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.gridLayout.addItem(spacerItem8, 5, 6, 1, 1)
-        self.dlc_status_widget = QtWidgets.QListWidget(self.frame_bug_main)
-        self.dlc_status_widget.setEnabled(True)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.dlc_status_widget.sizePolicy().hasHeightForWidth())
-        self.dlc_status_widget.setSizePolicy(sizePolicy)
-        self.dlc_status_widget.setMinimumSize(QtCore.QSize(230, 150))
-        self.dlc_status_widget.setMaximumSize(QtCore.QSize(460, 16777215))
-        font = QtGui.QFont()
-        font.setPointSize(-1)
-        self.dlc_status_widget.setFont(font)
-        self.dlc_status_widget.setToolTip("")
-        self.dlc_status_widget.setStatusTip("")
-        self.dlc_status_widget.setWhatsThis("")
-        self.dlc_status_widget.setAccessibleName("")
-        self.dlc_status_widget.setStyleSheet("\n"
-"QScrollBar::groove:vertical {\n"
-"        background: red;\n"
-"        width:5px\n"
-"}\n"
-"\n"
-"QScrollBar::handle:vertical {\n"
-"        height: 10px;\n"
-"        background:rgb(0,143,170);\n"
-"    margin:0 -8px\n"
-"}\n"
-"\n"
-"QScrollBar::add-page:vertical {\n"
-"        background:rgb(51,51,51);\n"
-"}\n"
-"\n"
-"QScrollBar::sub-page:vertical {\n"
-"        background:rgb(51,51,51);\n"
-"}\n"
-"\n"
-"QListWidget {\n"
-"    color: white;\n"
-"    font-size: 15px;\n"
-"};\n"
-"border: none;\n"
-"background-color: rgb(51,51,51);\n"
-"\n"
-"")
-        self.dlc_status_widget.setAutoScroll(False)
-        self.dlc_status_widget.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
-        self.dlc_status_widget.setProperty("showDropIndicator", False)
-        self.dlc_status_widget.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
-        self.dlc_status_widget.setObjectName("dlc_status_widget")
-        item = QtWidgets.QListWidgetItem()
-        item.setText("DLC Status")
-        font = QtGui.QFont()
-        font.setFamily("Segoe UI")
-        font.setPointSize(12)
-        item.setFont(font)
-        item.setFlags(QtCore.Qt.ItemIsEnabled)
-        self.dlc_status_widget.addItem(item)
-        self.gridLayout.addWidget(self.dlc_status_widget, 0, 6, 1, 1)
-        self.lab_bullet2 = QtWidgets.QLabel(self.frame_bug_main)
-        self.lab_bullet2.setMaximumSize(QtCore.QSize(5, 16777215))
-        self.lab_bullet2.setText("")
-        self.lab_bullet2.setPixmap(QtGui.QPixmap("UI\\../../../Desktop/unlocker-v2_design/Minimalistic-Flat-Modern-GUI-Template-master/icons/1x/bulletAsset 54.png"))
-        self.lab_bullet2.setObjectName("lab_bullet2")
-        self.gridLayout.addWidget(self.lab_bullet2, 1, 0, 1, 1)
+
         self.horizontalLayout_8 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_8.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
         self.horizontalLayout_8.setObjectName("horizontalLayout_8")
@@ -765,10 +639,74 @@ class Ui_MainWindow(object):
         self.path_choose_button.setObjectName("path_choose_button")
         self.horizontalLayout_8.addWidget(self.path_choose_button)
         self.gridLayout.addLayout(self.horizontalLayout_8, 0, 1, 1, 1)
+
+        self.dlc_status_widget = QtWidgets.QListWidget(self.frame_bug_main)
+        self.dlc_status_widget.setEnabled(True)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.dlc_status_widget.sizePolicy().hasHeightForWidth())
+        self.dlc_status_widget.setSizePolicy(sizePolicy)
+        self.dlc_status_widget.setMinimumSize(QtCore.QSize(230, 100))
+        self.dlc_status_widget.setMaximumSize(QtCore.QSize(460, 16777215))
+        font = QtGui.QFont()
+        font.setPointSize(-1)
+        self.dlc_status_widget.setFont(font)
+        self.dlc_status_widget.setToolTip("")
+        self.dlc_status_widget.setStatusTip("")
+        self.dlc_status_widget.setWhatsThis("")
+        self.dlc_status_widget.setAccessibleName("")
+        self.dlc_status_widget.setStyleSheet("\n"
+"QScrollBar::groove:vertical {\n"
+"        background: red;\n"
+"        width:5px\n"
+"}\n"
+"\n"
+"QScrollBar::handle:vertical {\n"
+"        height: 10px;\n"
+"        background:rgb(0,143,170);\n"
+"    margin:0 -8px\n"
+"}\n"
+"\n"
+"QScrollBar::add-page:vertical {\n"
+"        background:rgb(51,51,51);\n"
+"}\n"
+"\n"
+"QScrollBar::sub-page:vertical {\n"
+"        background:rgb(51,51,51);\n"
+"}\n"
+"\n"
+"QListWidget {\n"
+"    color: white;\n"
+"    font-size: 15px;\n"
+"};\n"
+"border: none;\n"
+"background-color: rgb(51,51,51);\n"
+"\n"
+"")
+        self.dlc_status_widget.setAutoScroll(False)
+        self.dlc_status_widget.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.dlc_status_widget.setProperty("showDropIndicator", False)
+        self.dlc_status_widget.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
+        self.dlc_status_widget.setObjectName("dlc_status_widget")
+        item = QtWidgets.QListWidgetItem()
+        item.setText("DLC Status")
+        font = QtGui.QFont()
+        font.setFamily("Segoe UI")
+        font.setPointSize(12)
+        item.setFont(font)
+        item.setFlags(QtCore.Qt.ItemIsEnabled)
+        self.dlc_status_widget.addItem(item)
+        self.gridLayout.addWidget(self.dlc_status_widget, 0, 6, 2, 1)
+
+        spacerItem_gridLayout_1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
+        self.gridLayout.addItem(spacerItem_gridLayout_1, 0, 7, 1, 1)
+
+
         self.horizontalLayout_23 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_23.setObjectName("horizontalLayout_23")
-        spacerItem9 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout_23.addItem(spacerItem9)
+        spacerItem_unlock_left = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_23.addItem(spacerItem_unlock_left)
         self.unlock_button = QtWidgets.QPushButton(self.frame_bug_main)
         self.unlock_button.setMinimumSize(QtCore.QSize(100, 25))
         font = QtGui.QFont()
@@ -798,133 +736,14 @@ class Ui_MainWindow(object):
 "}")
         self.unlock_button.setObjectName("unlock_button")
         self.horizontalLayout_23.addWidget(self.unlock_button)
-        spacerItem10 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout_23.addItem(spacerItem10)
-        self.gridLayout.addLayout(self.horizontalLayout_23, 5, 1, 1, 1)
-        self.horizontalLayout_17 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_17.setContentsMargins(0, -1, 100, -1)
-        self.horizontalLayout_17.setSpacing(0)
-        self.horizontalLayout_17.setObjectName("horizontalLayout_17")
-        self.full_reinstall_checkbox = QtWidgets.QCheckBox(self.frame_bug_main)
-        font = QtGui.QFont()
-        font.setFamily("Segoe UI")
-        font.setPointSize(14)
-        self.full_reinstall_checkbox.setFont(font)
-        self.full_reinstall_checkbox.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.full_reinstall_checkbox.setToolTip("")
-        self.full_reinstall_checkbox.setLayoutDirection(QtCore.Qt.RightToLeft)
-        self.full_reinstall_checkbox.setAutoFillBackground(False)
-        self.full_reinstall_checkbox.setStyleSheet("QCheckBox {\n"
-"        color:rgb(255,255,255);\n"
-"}\n"
-"\n"
-"QCheckBox::indicator {\n"
-"        width: 12px;\n"
-"        height: 12px;\n"
-"}\n"
-"\n"
-"QCheckBox::indicator:unchecked {\n"
-"        border:2px solid rgb(51,51,51);\n"
-"    background:rgb(91,90,90);\n"
-"}\n"
-"\n"
-"QCheckBox::indicator:unchecked:pressed {\n"
-"    border:2px solid rgb(51,51,51);\n"
-"       background:rgb(0,143,170);\n"
-"}\n"
-"\n"
-"QCheckBox::indicator:checked {\n"
-"    background-color:rgb(0,143,150);\n"
-"        border: 2px solid rgb(51,51,51);\n"
-"}\n"
-"\n"
-"QCheckBox::indicator:checked:pressed {\n"
-"        border:2px solid rgb(51,51,51);\n"
-"    background:rgb(91,90,90);\n"
-"}\n"
-"")
-        self.full_reinstall_checkbox.setTristate(False)
-        self.full_reinstall_checkbox.setObjectName("full_reinstall_checkbox")
-        self.horizontalLayout_17.addWidget(self.full_reinstall_checkbox)
-        self.full_reinstall_tooltip = QtWidgets.QLabel(self.frame_bug_main)
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setBold(False)
-        font.setItalic(False)
-        font.setUnderline(False)
-        font.setWeight(50)
-        font.setStrikeOut(False)
-        font.setKerning(True)
-        font.setStyleStrategy(QtGui.QFont.PreferDefault)
-        self.full_reinstall_tooltip.setFont(font)
-        self.full_reinstall_tooltip.setCursor(QtGui.QCursor(QtCore.Qt.WhatsThisCursor))
-        self.full_reinstall_tooltip.setMouseTracking(False)
-        self.full_reinstall_tooltip.setAcceptDrops(False)
-        self.full_reinstall_tooltip.setToolTipDuration(-1)
-        self.full_reinstall_tooltip.setStatusTip("")
-        self.full_reinstall_tooltip.setWhatsThis("")
-        self.full_reinstall_tooltip.setAccessibleName("")
-        self.full_reinstall_tooltip.setStyleSheet("padding-bottom: 10px;")
-        self.full_reinstall_tooltip.setText("?")
-        self.full_reinstall_tooltip.setObjectName("full_reinstall_tooltip")
-        self.horizontalLayout_17.addWidget(self.full_reinstall_tooltip)
-        spacerItem11 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout_17.addItem(spacerItem11)
-        self.gridLayout.addLayout(self.horizontalLayout_17, 1, 1, 1, 1)
-        self.horizontalLayout_22 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_22.setSpacing(0)
-        self.horizontalLayout_22.setObjectName("horizontalLayout_22")
-        self.skip_launcher_reinstall_checbox = QtWidgets.QCheckBox(self.frame_bug_main)
-        font = QtGui.QFont()
-        font.setFamily("Segoe UI")
-        font.setPointSize(14)
-        self.skip_launcher_reinstall_checbox.setFont(font)
-        self.skip_launcher_reinstall_checbox.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.skip_launcher_reinstall_checbox.setToolTip("")
-        self.skip_launcher_reinstall_checbox.setLayoutDirection(QtCore.Qt.RightToLeft)
-        self.skip_launcher_reinstall_checbox.setStyleSheet("QCheckBox {\n"
-"        color:rgb(255,255,255);\n"
-"}\n"
-"\n"
-"QCheckBox::indicator {\n"
-"        width: 12px;\n"
-"        height: 12px;\n"
-"}\n"
-"\n"
-"QCheckBox::indicator:unchecked {\n"
-"        border:2px solid rgb(51,51,51);\n"
-"    background:rgb(91,90,90);\n"
-"}\n"
-"\n"
-"QCheckBox::indicator:unchecked:pressed {\n"
-"    border:2px solid rgb(51,51,51);\n"
-"       background:rgb(0,143,170);\n"
-"}\n"
-"\n"
-"QCheckBox::indicator:checked {\n"
-"    background-color:rgb(0,143,150);\n"
-"        border: 2px solid rgb(51,51,51);\n"
-"}\n"
-"\n"
-"QCheckBox::indicator:checked:pressed {\n"
-"        border:2px solid rgb(51,51,51);\n"
-"    background:rgb(91,90,90);\n"
-"}\n"
-"")
-        self.skip_launcher_reinstall_checbox.setObjectName("skip_launcher_reinstall_checbox")
-        self.horizontalLayout_22.addWidget(self.skip_launcher_reinstall_checbox)
-        self.skip_launcher_reinstall_tooltip = QtWidgets.QLabel(self.frame_bug_main)
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        self.skip_launcher_reinstall_tooltip.setFont(font)
-        self.skip_launcher_reinstall_tooltip.setCursor(QtGui.QCursor(QtCore.Qt.WhatsThisCursor))
-        self.skip_launcher_reinstall_tooltip.setStyleSheet("padding-bottom: 10px;")
-        self.skip_launcher_reinstall_tooltip.setText("?")
-        self.skip_launcher_reinstall_tooltip.setObjectName("skip_launcher_reinstall_tooltip")
-        self.horizontalLayout_22.addWidget(self.skip_launcher_reinstall_tooltip)
-        spacerItem12 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout_22.addItem(spacerItem12)
-        self.gridLayout.addLayout(self.horizontalLayout_22, 3, 1, 1, 1)
+        spacerItem_unlock_right = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_23.addItem(spacerItem_unlock_right)
+        self.gridLayout.addLayout(self.horizontalLayout_23, 1, 1, 1, 1)
+
+        spacerItem_gridLayout_2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.gridLayout.addItem(spacerItem_gridLayout_2, 2, 1, 1, 1)
+
+
         self.verticalLayout_7.addWidget(self.frame_bug_main)
         self.horizontalLayout_20 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_20.setContentsMargins(-1, 0, -1, -1)
@@ -975,33 +794,6 @@ class Ui_MainWindow(object):
         self.download_files_radio.setAutoExclusive(False)
         self.download_files_radio.setObjectName("download_files_radio")
         self.verticalLayout_11.addWidget(self.download_files_radio)
-        self.launcher_reinstall_radio = QtWidgets.QRadioButton(self.work_page)
-        self.launcher_reinstall_radio.setEnabled(False)
-        font = QtGui.QFont()
-        font.setFamily("Segoe UI")
-        font.setPointSize(10)
-        self.launcher_reinstall_radio.setFont(font)
-        self.launcher_reinstall_radio.setStyleSheet("QRadioButton::indicator {\n"
-"    width: 10px;\n"
-"    height: 10px;\n"
-"}\n"
-"\n"
-"QRadioButton::indicator::unchecked {\n"
-"    background-color: rgb(255,107,107);\n"
-"    border-radius: 5px;\n"
-"}\n"
-"\n"
-"QRadioButton::indicator::checked {\n"
-"    background-color: rgb(0,143,150);\n"
-"    border-radius: 5px;\n"
-"}\n"
-"\n"
-"QRadioButton {\n"
-"    color: white;\n"
-"}")
-        self.launcher_reinstall_radio.setAutoExclusive(False)
-        self.launcher_reinstall_radio.setObjectName("launcher_reinstall_radio")
-        self.verticalLayout_11.addWidget(self.launcher_reinstall_radio)
         self.copy_files_radio = QtWidgets.QRadioButton(self.work_page)
         self.copy_files_radio.setEnabled(False)
         font = QtGui.QFont()
@@ -1359,7 +1151,7 @@ class Ui_MainWindow(object):
         self.bottom_label_github.setFont(font)
         self.bottom_label_github.setAccessibleName("")
         self.bottom_label_github.setStyleSheet("color:rgb(255,255,255);")
-        self.bottom_label_github.setText("<html><head/><body><p><img src=\":/soicials/icons/social/GitHub-Logo.wine.png\"/>GitHub: <a href=\"https://github.com/seuyh/stellaris-dlc-unlocker\"><span style=\" text-decoration: underline; color:#008f96;\">github.com/seuyh/stellaris-dlc-unlocker</span></a></p></body></html>")
+        self.bottom_label_github.setText("<html><head/><body><p><img src=\":/soicials/icons/social/GitHub-Logo.wine.png\"/>GitHub: <a href=\"https://github.com/Ultra119/stellaris-dlc-unlocker-linux\"><span style=\" text-decoration: underline; color:#008f96;\">github.com/Ultra119/stellaris-dlc-unlocker</span></a></p></body></html>")
         self.bottom_label_github.setAlignment(QtCore.Qt.AlignCenter)
         self.bottom_label_github.setObjectName("bottom_label_github")
         self.horizontalLayout_12.addWidget(self.bottom_label_github)
@@ -1401,21 +1193,14 @@ class Ui_MainWindow(object):
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:\'MS Shell Dlg 2\';\"><br /></p></body></html>"))
         self.next_button.setText(_translate("MainWindow", "Next"))
         self.work_page_label.setText(_translate("MainWindow", "Unlock settings"))
-        self.alternative_unloc_checkbox.setText(_translate("MainWindow", "Alternative unlock"))
-        self.label_2.setToolTip(_translate("MainWindow", "<html><head/><body><p>Uses a different unlock method</p></body></html>"))
         __sortingEnabled = self.dlc_status_widget.isSortingEnabled()
         self.dlc_status_widget.setSortingEnabled(False)
         self.dlc_status_widget.setSortingEnabled(__sortingEnabled)
         self.game_path_label.setText(_translate("MainWindow", "Stellaris path", "sadsadsa"))
         self.path_choose_button.setText(_translate("MainWindow", "Open"))
         self.unlock_button.setText(_translate("MainWindow", "Unlock"))
-        self.full_reinstall_checkbox.setText(_translate("MainWindow", "Full launcher reinstallation"))
-        self.full_reinstall_tooltip.setToolTip(_translate("MainWindow", "<html><head/><body><p>This function will delete all saves and presets of mods.</p><p>It is only needed if something did not work during the normal installation</p></body></html>"))
-        self.skip_launcher_reinstall_checbox.setText(_translate("MainWindow", "Skip launcher reinstall"))
-        self.skip_launcher_reinstall_tooltip.setToolTip(_translate("MainWindow", "<html><head/><body><p>It is used if it is impossible to automatically reinstall the launcher.</p><p>The program will assume that the launcher has already been reinstalled before</p></body></html>"))
         self.progress_label.setText(_translate("MainWindow", "Progress"))
         self.download_files_radio.setText(_translate("MainWindow", "Download files"))
-        self.launcher_reinstall_radio.setText(_translate("MainWindow", "Launcher reinstall"))
         self.copy_files_radio.setText(_translate("MainWindow", "Copy files"))
         self.dlc_download_label.setText(_translate("MainWindow", "DLC Download progress"))
         self.current_dlc_label.setText(_translate("MainWindow", "Current DLC progress"))
