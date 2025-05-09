@@ -7,7 +7,7 @@ import zipfile
 import requests
 from PyQt5.QtGui import QDesktopServices, QColor, QBrush, QIcon, QClipboard
 from PyQt5.QtWidgets import QMainWindow, QFileDialog, QListWidgetItem, QProgressDialog, QApplication
-from PyQt5.QtCore import Qt, QUrl, QTimer, QTranslator
+from PyQt5.QtCore import Qt, QUrl, QTimer, QTranslator, pyqtSlot, QThread, QMetaObject
 from subprocess import run
 from pathlib import Path
 import subprocess
@@ -119,9 +119,19 @@ class MainWindow(QMainWindow, ui_main.Ui_MainWindow):
                                                     self.tr("Yes")) else None)
 
         self.bottom_label_github.linkActivated.connect(self.open_link_in_browser)
-        self.logger = Logger('unlocker.log', self.log_widget)
-        self.log_widget = self.log_widget
+        self.logger = Logger('unlocker.log')
+        self.logger.log_message_signal.connect(self.append_log_message_to_widget)
+        self.logger.request_error_dialog_signal.connect(self.show_logger_error_dialog)
         self.log_widget.clear()
+
+    @pyqtSlot(str)
+    def append_log_message_to_widget(self, log_text):
+        self.log_widget.addItem(log_text)
+        self.log_widget.scrollToBottom()
+
+    @pyqtSlot(str, str, str, bool)
+    def show_logger_error_dialog(self, heading, btn_ok_text, icon_path, exit_app):
+        self.errorexec(heading, btn_ok_text, icon_path, exit_app)
 
     def showEvent(self, event):
         super(MainWindow, self).showEvent(event)
@@ -183,12 +193,12 @@ class MainWindow(QMainWindow, ui_main.Ui_MainWindow):
             self.is_dragging = False
 
     def dialogexec(self, heading, message, btn1, btn2, icon=":/icons/icons/1x/errorAsset 55.png"):
-        print(f'Dialog exec {heading, message, btn1, btn2, icon}')
+        print(f'Dialog exec: {heading}, {message}, {btn1}, {btn2}, {icon}')
         dialogUi.dialogConstrict(self.diag, heading, message, btn1, btn2, icon, self)
         return self.diag.exec_()
 
     def errorexec(self, heading, btnOk, icon=":/icons/icons/1x/closeAsset 43.png", exitApp=False):
-        print(f'Error exec {heading, btnOk, icon, exitApp}')
+        print(f'Error exec: {heading}, {btnOk}, {icon}, {exitApp}')
         errorUi.errorConstrict(self.error, heading, icon, btnOk, self, exitApp)
         self.error.exec_()
 
@@ -567,6 +577,11 @@ class MainWindow(QMainWindow, ui_main.Ui_MainWindow):
         print(f'ReinstallThread (Linux stub) error signal: {error_message}')
 
     def download_complete(self):
+        if QThread.currentThread() != self.thread():
+            print("Warning: download_complete called off-thread, re-queuing.")
+            QTimer.singleShot(0, self.download_complete)
+            return
+
         if self.dlc_download_progress_bar.value() == 100 and self.creamapidone:
             print('All DLC downloads and CreamAPI generation complete.')
             self.download_files_radio.setChecked(True)

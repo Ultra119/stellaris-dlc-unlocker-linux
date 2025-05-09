@@ -4,16 +4,19 @@ from functools import partial
 import io
 import traceback
 import atexit
-from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import QObject, pyqtSignal, QTimer, QThread, QCoreApplication
 from UI_logic.ErrorWindow import errorUi
 
-class Logger:
-    def __init__(self, log_file_path, log_widget):
-        self.log_widget = log_widget
+class Logger(QObject):
+    log_message_signal = pyqtSignal(str)
+    request_error_dialog_signal = pyqtSignal(str, str, str, bool)
+
+
+    def __init__(self, log_file_path):
+        super().__init__()
         self.stdout_buffer = []
         self.stderr_buffer = []
         self.log_file = open(log_file_path, 'w', encoding='utf-8')
-        self.error = errorUi()
 
         if sys.stdout is None:
             sys.stdout = io.StringIO()
@@ -44,33 +47,37 @@ class Logger:
                 full_message = ''.join(self.stdout_buffer)
                 self.stdout_buffer.clear()
                 self.handle_logging(full_message)
+        
+        if callable(orig_write):
+            try:
+                orig_write(text)
+            except Exception:
+                pass
 
-        orig_write(text)
 
     def handle_logging(self, full_message):
         if full_message.strip():
             log_text = f'[{datetime.now().strftime("%H:%M:%S")}] {full_message.strip()}'
             self.log_file.write(log_text + '\n')
             self.log_file.flush()
-            self.log_widget.addItem(log_text)
-            self.log_widget.scrollToBottom()
+            self.log_message_signal.emit(log_text)
 
     def handle_exception(self, exc_type, exc_value, exc_traceback):
         if issubclass(exc_type, KeyboardInterrupt):
             sys.__excepthook__(exc_type, exc_value, exc_traceback)
             return
 
-        error_message = ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
-        self.handle_logging(f"Unhandled exception: {error_message}")
+        error_message_str = ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+        self.handle_logging(f"Unhandled exception: {error_message_str}")
 
-        print(f"Error: {error_message}")
-        QTimer.singleShot(0, lambda: self.errorexec('Crashed!\nSee unlocker.log', 'Exit', exitApp=True))
+        self.request_error_dialog_signal.emit(
+            'Crashed!\nSee unlocker.log', 
+            'Exit', 
+            ":/icons/icons/1x/closeAsset 43.png",
+            True # exitApp
+        )
+
 
     def close(self):
         if self.log_file and not self.log_file.closed:
             self.log_file.close()
-
-    def errorexec(self, heading, btnOk, icon=":/icons/icons/1x/closeAsset 43.png", exitApp=False):
-        print(f'Call errorexec: {heading, btnOk, icon, exitApp}')
-        errorUi.errorConstrict(self.error, heading, icon, btnOk, None, exitApp)
-        self.error.exec_()
