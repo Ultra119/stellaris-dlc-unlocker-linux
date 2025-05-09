@@ -1,5 +1,3 @@
-from idlelib.iomenu import errors
-
 from requests import get
 from time import sleep
 from PyQt5 import QtCore
@@ -16,7 +14,7 @@ class CreamAPI(QtCore.QThread):
         self.parent_directory = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     def get_dlc_name(self, dlc_id, errors=0):
-        print('CreamApi creating...')
+        print('CreamApi creating... (get_dlc_name)')
         url = f"https://api.steamcmd.net/v1/info/{dlc_id}"
         headers = {
             "User-Agent": "Mozilla/5.0",
@@ -30,22 +28,30 @@ class CreamAPI(QtCore.QThread):
         }
         try:
             response = get(url, headers=headers, timeout=3)
-            print(response)
+            print(f"Response for DLC ID {dlc_id}: {response.status_code}")
             if response.status_code == 200:
                 data = response.json()
                 dlc_name = data['data'][str(dlc_id)]['common']['name']
-                print(dlc_name)
+                print(f"DLC Name for {dlc_id}: {dlc_name}")
                 return dlc_name
             else:
-                return None
-        except Exception:
+                print(f"Failed to get DLC name for {dlc_id}, status code: {response.status_code}")
+                if errors >= 3:
+                    return None
+                errors += 1
+                print('Retrying get_dlc_name...')
+                return self.get_dlc_name(dlc_id, errors)
+
+        except Exception as e:
+            print(f"Exception in get_dlc_name for {dlc_id}: {e}")
             if errors >= 3:
                 return False
             errors += 1
-            print('Cant connect steamcmd. Rertying...')
-            return self.get_dlc_name(dlc_id)
+            print('Cant connect steamcmd (exception). Retrying get_dlc_name...')
+            return self.get_dlc_name(dlc_id, errors)
 
     def get_dlc_list(self, app_id, errors=0):
+        print('CreamApi creating... (get_dlc_list)')
         url = f"https://api.steamcmd.net/v1/info/{app_id}"
         headers = {
             "User-Agent": "Mozilla/5.0",
@@ -59,39 +65,95 @@ class CreamAPI(QtCore.QThread):
         }
         try:
             response = get(url, headers=headers, timeout=3)
-            data = response.json()
-            dlc_list_json = data['data'][str(app_id)]['extended']['listofdlc']
-            dlc_list = dlc_list_json.split(',')
-            return dlc_list
-        except Exception:
+            print(f"Response for App ID {app_id} (DLC list): {response.status_code}")
+            if response.status_code == 200:
+                data = response.json()
+                app_data = data.get('data', {}).get(str(app_id), {})
+                extended_data = app_data.get('extended', {})
+                dlc_list_json = extended_data.get('listofdlc')
+
+                if dlc_list_json is None:
+                    print(f"'listofdlc' not found for app_id {app_id} in response.")
+                    if errors >= 3:
+                        return False
+                    errors += 1
+                    print('Retrying get_dlc_list (listofdlc not found)...')
+                    return self.get_dlc_list(app_id, errors)
+                
+                dlc_list = dlc_list_json.split(',')
+                return dlc_list
+            else:
+                print(f"Failed to get DLC list for {app_id}, status code: {response.status_code}")
+                if errors >= 3:
+                    return False
+                errors += 1
+                print('Retrying get_dlc_list (non-200 status)...')
+                return self.get_dlc_list(app_id, errors)
+
+        except Exception as e:
+            print(f"Exception in get_dlc_list for {app_id}: {e}")
             if errors >= 3:
                 return False
             errors += 1
-            print('Cant connect steamcmd. Rertying...')
+            print('Cant connect steamcmd (exception). Retrying get_dlc_list...')
             return self.get_dlc_list(app_id, errors)
 
     def run(self):
-        print('Cream api creating...')
+        print('Cream api creating process starting...')
         dlc_list = self.get_dlc_list(281990)
-        print(dlc_list)
+        print(f"Retrieved DLC list: {dlc_list}")
         if dlc_list:
-            self.check_and_update_dlc_list(dlc_list,
-                                           os.path.join(self.parent_directory, 'creamapi_steam_files', 'cream_api.ini'))
-            self.check_and_update_dlc_list(dlc_list,
-                                           os.path.join(self.parent_directory, 'creamapi_launcher_files', 'cream_api.ini'))
-            # self.launcher_creamapi(dlcs)
+            if dlc_list is False:
+                print('Failed to retrieve DLC list from SteamCMD API. Skipped cream_api.ini update.')
+            else:
+                game_cream_api_path = os.path.join(self.parent_directory, 'creamlinux', 'cream_api.ini')
+                os.makedirs(os.path.dirname(game_cream_api_path), exist_ok=True)
+
+                self.check_and_update_dlc_list(dlc_list, game_cream_api_path)
+
             self.progress_signal.emit(100)
         else:
-            print('SteamCmd unavailable. Skipped')
+            print('SteamCmd API unavailable or no DLCs found. Skipped cream_api.ini update.')
             self.progress_signal.emit(100)
             return
 
 
     def check_and_update_dlc_list(self, dlc_list, path):
-        with open(path, 'r+') as file:
-            content = file.read()
-            for dlc_id in dlc_list:
-                if str(dlc_id) not in content:
-                    dlc_name = self.get_dlc_name(dlc_id)
-                    file.write(f"\n{dlc_id} = {dlc_name}")
-                    print('CreamApi writed')
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        
+        existing_content = ""
+        try:
+            with open(path, 'r') as file:
+                existing_content = file.read()
+        except FileNotFoundError:
+            print(f"cream_api.ini not found at {path}, will create a new one.")
+        except Exception as e:
+            print(f"Error reading {path}: {e}. Proceeding to write/overwrite.")
+        
+        new_dlcs_added_count = 0
+        dlc_lines_to_add = []
+
+        for dlc_id in dlc_list:
+            if not dlc_id.strip():
+                continue
+            if f"\n{dlc_id} =" not in existing_content and f"{dlc_id} =" not in existing_content:
+                dlc_name = self.get_dlc_name(dlc_id)
+                if dlc_name:
+                    dlc_lines_to_add.append(f"{dlc_id} = {dlc_name}")
+                    new_dlcs_added_count +=1
+                elif dlc_name is None:
+                    print(f"Could not retrieve name for DLC ID {dlc_id} after retries. Skipping.")
+        
+        if dlc_lines_to_add:
+            try:
+                with open(path, 'a+') as file:
+                    file.seek(0, 2)
+                    if existing_content and not existing_content.endswith('\n'):
+                        file.write('\n')
+                    for line in dlc_lines_to_add:
+                        file.write(f"{line}\n")
+                print(f'{new_dlcs_added_count} new DLC(s) written to {path}')
+            except Exception as e:
+                print(f"Error writing to {path}: {e}")
+        else:
+            print(f'No new DLCs to add to {path}.')
