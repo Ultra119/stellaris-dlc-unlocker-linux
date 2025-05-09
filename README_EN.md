@@ -19,18 +19,20 @@ Stellaris DLC Unlocker is a program designed to simplify the process of unlockin
 
 ## How to Use
 
-1. **Download the latest release from the current [repository](https://github.com/seuyh/stellaris-dlc-unlocker/releases).**
+1. **Clone this repo: <code>git clone https://github.com/Ultra119/stellaris-dlc-unlocker-linux.git</code>**
 
-2. **Close the game and the Paradox launcher:**
+2. **Initializate venv: <code>python -m venv venv && source venv/bin/activate</code>**
 
-3. **Open the Stellaris DLC Unlocker program and follow the installer instructions on your device.**
+3. **Install dependencies: <code>pip install -r requirements.txt</code>**
 
-4. **Done! All DLCs are now unlocked and ready to use in the game Stellaris!**
+4. **Open Stellaris DLC Unlocker with <code>python main.py</code> and follow instructions.**
+
+5. **Done! All DLC is unlocked**
 
 ## Requirements
 
 - Steam License: Stellaris
-- Operating System: Tested on Windows 10/11. Compatibility with earlier versions is not ruled out.
+- Operating System: Linux
 - Internet access
 - Approximately 2GB of free disk space
 - Ability to read text on the screen
