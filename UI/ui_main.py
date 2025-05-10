@@ -1151,7 +1151,7 @@ class Ui_MainWindow(object):
         self.bottom_label_github.setFont(font)
         self.bottom_label_github.setAccessibleName("")
         self.bottom_label_github.setStyleSheet("color:rgb(255,255,255);")
-        self.bottom_label_github.setText("<html><head/><body><p><img src=\":/soicials/icons/social/GitHub-Logo.wine.png\"/>GitHub: <a href=\"https://github.com/Ultra119/stellaris-dlc-unlocker-linux\"><span style=\" text-decoration: underline; color:#008f96;\">github.com/Ultra119/stellaris-dlc-unlocker</span></a></p></body></html>")
+        self.bottom_label_github.setText("<html><head/><body><p><img src=\":/soicials/icons/social/GitHub-Logo.wine.png\"/>GitHub: <a href=\"https://github.com/Ultra119/stellaris-dlc-unlocker-linux\"><span style=\" text-decoration: underline; color:#008f96;\">github.com/Ultra119/stellaris-dlc-unlocker-linux</span></a></p></body></html>")
         self.bottom_label_github.setAlignment(QtCore.Qt.AlignCenter)
         self.bottom_label_github.setObjectName("bottom_label_github")
         self.horizontalLayout_12.addWidget(self.bottom_label_github)
